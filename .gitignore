@@ -240,3 +240,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/AtlassianOAuthConnector/Properties/Settings.settings
+/AtlassianOAuthConnector/Properties/Settings.Designer.cs
+/AtlassianOAuthConnector/app.config
