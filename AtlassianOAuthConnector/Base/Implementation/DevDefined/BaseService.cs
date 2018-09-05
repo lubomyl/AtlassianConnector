@@ -25,8 +25,33 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
         private string _baseUrl;
 
-        private BaseService()
+        private enum ServiceType { Confluence, Jira };
+
+        private string _requestTokenUrlContext, _userAuthorizeTokenUrlContext, _accessTokenUrlContext;
+        private string _resourceContext;
+
+        private BaseService(ServiceType context)
         {
+            this.InitializeUris(context);
+        }
+
+        private void InitializeUris(ServiceType context)
+        {
+            if (context == ServiceType.Confluence) {
+                this._requestTokenUrlContext = "/wiki/plugins/servlet/oauth/request-token";
+                this._userAuthorizeTokenUrlContext = "/wiki/plugins/servlet/oauth/authorize";
+                this._accessTokenUrlContext = "/wiki/plugins/servlet/oauth/access-token";
+                this._resourceContext = "/wiki/rest/api/";
+            } else if(context == ServiceType.Jira)
+            {
+                this._requestTokenUrlContext = "/plugins/servlet/oauth/request-token";
+                this._userAuthorizeTokenUrlContext = "/plugins/servlet/oauth/authorize";
+                this._accessTokenUrlContext = "/plugins/servlet/oauth/access-token";
+                this._resourceContext = "/rest/api/latest/";
+            } else
+            {
+                throw new NotImplementedException();
+            }
         }
 
         /// <summary>
@@ -38,9 +63,9 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
             X509Certificate2 certificate = new X509Certificate2(Properties.Settings.Default.CertificatePath, Properties.Settings.Default.CertificateSecret);
 
-            string requestTokenUrl = this._baseUrl + "/wiki/plugins/servlet/oauth/request-token";
-            string userAuthorizeTokenUrl = this._baseUrl + "/wiki/plugins/servlet/oauth/authorize";
-            string accessTokenUrl = this._baseUrl + "/wiki/plugins/servlet/oauth/access-token";
+            string requestTokenUrl = this._baseUrl + this._requestTokenUrlContext;
+            string userAuthorizeTokenUrl = this._baseUrl + this._userAuthorizeTokenUrlContext;
+            string accessTokenUrl = this._baseUrl + this._accessTokenUrlContext;
 
             var consumerContext = new OAuthConsumerContext
             {
@@ -77,7 +102,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public K Get<K>(string resource) where K : new()
         {
-            var response = this._session.Request().Get().ForUrl(_baseUrl + "/wiki/rest/api/" + resource).ReadBody();
+            var response = this._session.Request().Get().ForUrl(_baseUrl + this._resourceContext + resource).ReadBody();
 
             if (response != null)
             {
@@ -120,13 +145,26 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             return ret;
         }
 
-        public static BaseService Instance
+        public static BaseService ConfluenceInstance
         {
             get
             {
                 if (_instance == null)
                 {
-                    _instance = new BaseService();
+                    _instance = new BaseService(ServiceType.Confluence);
+                }
+
+                return _instance;
+            }
+        }
+
+        public static BaseService JiraInstance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new BaseService(ServiceType.Jira);
                 }
 
                 return _instance;
