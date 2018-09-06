@@ -75,6 +75,11 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
             throw new NotImplementedException();
         }
 
+        public K GetAgile<K>(string resource) where K : new()
+        {
+            throw new NotImplementedException();
+        }
+
         #region BaseService Members
 
         public string Username

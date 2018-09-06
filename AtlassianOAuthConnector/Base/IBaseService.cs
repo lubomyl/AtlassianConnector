@@ -25,6 +25,9 @@ namespace AtlassianConnector.Service
         /// <returns></returns>
         K Get<K>(string resource) where K : new();
 
+        //TODO temporary - refactor BaseService
+        //split into Jira/Conflunece using Get method
+        K GetAgile<K>(string resource) where K : new();
 
         /// <summary>
         /// Step 1 of OAuth1.0 dance. Obtains request token needed for further steps.
