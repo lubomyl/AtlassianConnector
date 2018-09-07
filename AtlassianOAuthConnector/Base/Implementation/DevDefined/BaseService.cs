@@ -114,6 +114,20 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             }
         }
 
+        public K GetAgile<K>(string resource) where K : new()
+        {
+            var response = this._session.Request().Get().ForUrl(_baseUrl + "rest/agile/latest/" + resource).ReadBody();
+
+            if (response != null)
+            {
+                return JsonConvert.DeserializeObject<K>(response);
+            }
+            else
+            {
+                return default(K);
+            }
+        }
+
         /// <summary>
         /// <see cref="IBaseService{T}.GetRequestToken"/>
         /// </summary>
