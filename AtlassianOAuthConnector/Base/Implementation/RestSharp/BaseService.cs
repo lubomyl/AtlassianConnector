@@ -33,7 +33,7 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
             this.Authenticator = new HttpBasicAuthenticator(_username, _password);
         }
 
-        public T Get<T>(string resource) where T : new()
+        public T Get<T>(string resource, string resourceContext) where T : new()
         {
             var request = new RestRequest(resource);
 

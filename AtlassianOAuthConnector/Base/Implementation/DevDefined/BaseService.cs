@@ -21,37 +21,22 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
     {
         private OAuthSession _session;
 
-        private static BaseService _instance = null;
+        private static JiraService _jiraInstance = null;
+        private static ConfluenceService _confluenceInstance = null;
 
         private string _baseUrl;
 
-        private enum ServiceType { Confluence, Jira };
-
         private string _requestTokenUrlContext, _userAuthorizeTokenUrlContext, _accessTokenUrlContext;
-        private string _resourceContext;
 
-        private BaseService(ServiceType context)
+        protected BaseService()
         {
-            this.InitializeUris(context);
         }
 
-        private void InitializeUris(ServiceType context)
+        protected void InitializeUris(string requestTokenUrl, string userAuthorizeTokenUrlContext, string accessTokenUrlContext, string resourceContext)
         {
-            if (context == ServiceType.Confluence) {
-                this._requestTokenUrlContext = "/wiki/plugins/servlet/oauth/request-token";
-                this._userAuthorizeTokenUrlContext = "/wiki/plugins/servlet/oauth/authorize";
-                this._accessTokenUrlContext = "/wiki/plugins/servlet/oauth/access-token";
-                this._resourceContext = "/wiki/rest/api/";
-            } else if(context == ServiceType.Jira)
-            {
-                this._requestTokenUrlContext = "/plugins/servlet/oauth/request-token";
-                this._userAuthorizeTokenUrlContext = "/plugins/servlet/oauth/authorize";
-                this._accessTokenUrlContext = "/plugins/servlet/oauth/access-token";
-                this._resourceContext = "/rest/api/latest/";
-            } else
-            {
-                throw new NotImplementedException();
-            }
+            this._requestTokenUrlContext = requestTokenUrl;
+            this._userAuthorizeTokenUrlContext = userAuthorizeTokenUrlContext;
+            this._accessTokenUrlContext = accessTokenUrlContext;
         }
 
         /// <summary>
@@ -98,25 +83,11 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
 
         /// <summary>
-        /// <see cref="IBaseService{T}.Get{K}(string)"/>
+        /// <see cref="IBaseService{T}.Get{K}(string., string)"/>
         /// </summary>
-        public K Get<K>(string resource) where K : new()
+        public K Get<K>(string resource, string resourceContext) where K : new()
         {
-            var response = this._session.Request().Get().ForUrl(_baseUrl + this._resourceContext + resource).ReadBody();
-
-            if (response != null)
-            {
-                return JsonConvert.DeserializeObject<K>(response);
-            }
-            else
-            {
-                return default(K);
-            }
-        }
-
-        public K GetAgile<K>(string resource) where K : new()
-        {
-            var response = this._session.Request().Get().ForUrl(_baseUrl + "/rest/agile/latest/" + resource).ReadBody();
+            var response = this._session.Request().Get().ForUrl(_baseUrl + resourceContext + resource).ReadBody();
 
             if (response != null)
             {
@@ -159,29 +130,29 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             return ret;
         }
 
-        public static BaseService ConfluenceInstance
+        public static ConfluenceService ConfluenceInstance
         {
             get
             {
-                if (_instance == null)
+                if (_confluenceInstance == null)
                 {
-                    _instance = new BaseService(ServiceType.Confluence);
+                    _confluenceInstance= new ConfluenceService();
                 }
 
-                return _instance;
+                return _confluenceInstance;
             }
         }
 
-        public static BaseService JiraInstance
+        public static JiraService JiraInstance
         {
             get
             {
-                if (_instance == null)
+                if (_jiraInstance == null)
                 {
-                    _instance = new BaseService(ServiceType.Jira);
+                    _jiraInstance = new JiraService();
                 }
 
-                return _instance;
+                return _jiraInstance;
             }
         }
     }

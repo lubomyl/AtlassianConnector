@@ -22,12 +22,9 @@ namespace AtlassianConnector.Service
         /// </summary>
         /// <typeparam name="K">Result of Get operation. Might be some type of Response object or deserialized model class object.</typeparam>
         /// <param name="resource">Resource identifier. (e. g. spaces, content, user?id=1)</param>
+        /// <param name="resourceContext">Url context specifying path to resource. (e. g. /api/agile/latest)</param>
         /// <returns></returns>
-        K Get<K>(string resource) where K : new();
-
-        //TODO temporary - refactor BaseService
-        //split into Jira/Conflunece using Get method
-        K GetAgile<K>(string resource) where K : new();
+        K Get<K>(string resource, string resourceContext) where K : new();
 
         /// <summary>
         /// Step 1 of OAuth1.0 dance. Obtains request token needed for further steps.
