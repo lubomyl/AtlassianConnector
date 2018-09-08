@@ -21,7 +21,8 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
     {
         private OAuthSession _session;
 
-        private static BaseService _instance = null;
+        private static JiraService _jiraInstance = null;
+        private static ConfluenceService _confluenceInstance = null;
 
         private string _baseUrl;
 
@@ -129,29 +130,29 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             return ret;
         }
 
-        public static BaseService ConfluenceInstance
+        public static ConfluenceService ConfluenceInstance
         {
             get
             {
-                if (_instance == null)
+                if (_confluenceInstance == null)
                 {
-                    _instance = new BaseService();
+                    _confluenceInstance= new ConfluenceService();
                 }
 
-                return _instance;
+                return _confluenceInstance;
             }
         }
 
-        public static BaseService JiraInstance
+        public static JiraService JiraInstance
         {
             get
             {
-                if (_instance == null)
+                if (_jiraInstance == null)
                 {
-                    _instance = new JiraService();
+                    _jiraInstance = new JiraService();
                 }
 
-                return _instance;
+                return _jiraInstance;
             }
         }
     }
