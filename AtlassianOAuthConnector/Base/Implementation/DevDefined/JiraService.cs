@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DevDefined.OAuth.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,6 +31,11 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         public K GetAgileResource<K>(string resource) where K : new()
         {
             return base.Get<K>(resource, RESOURCE_CONTEXT_AGILE);
+        }
+
+        public void PutResource(string resource, byte[] content)
+        {
+            base.Put(resource, RESOURCE_CONTEXT, content);
         }
 
     }

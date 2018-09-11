@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
     /// </summary>
     public class BaseService : IBaseService<IToken>
     {
-        private OAuthSession _session;
+        private static OAuthSession _session;
 
         private static JiraService _jiraInstance = null;
         private static ConfluenceService _confluenceInstance = null;
@@ -61,9 +62,8 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                 UseHeaderForOAuthParameters = true
             };
 
-            this._session = new OAuthSession(consumerContext, requestTokenUrl, userAuthorizeTokenUrl, accessTokenUrl);
+            _session = new OAuthSession(consumerContext, requestTokenUrl, userAuthorizeTokenUrl, accessTokenUrl);
         }
-
 
         /// <summary>
         /// Reinitializes OAuth session object with provided access token properties. Used on restart of application. Important for remember me like function.
@@ -78,16 +78,16 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             accessToken.Token = token;
             accessToken.TokenSecret = tokenSecret;
 
-            this._session.AccessToken = accessToken;
+            _session.AccessToken = accessToken;
         }
 
 
         /// <summary>
-        /// <see cref="IBaseService{T}.Get{K}(string., string)"/>
+        /// <see cref="IBaseService{T}.Get{K}(string, string)"/>
         /// </summary>
         public K Get<K>(string resource, string resourceContext) where K : new()
         {
-            var response = this._session.Request().Get().ForUrl(_baseUrl + resourceContext + resource).ReadBody();
+            var response = _session.Request().Get().ForUrl(_baseUrl + resourceContext + resource).ReadBody();
 
             if (response != null)
             {
@@ -100,11 +100,21 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
+        /// <see cref="IBaseService{T}.Put{K}(string, string, string)"/>
+        /// </summary>
+        public void Put(string resource, string resourceContext, byte[] content)
+        {
+            var response = _session.Request().ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebResponse();
+
+            response.Close();
+        }
+
+        /// <summary>
         /// <see cref="IBaseService{T}.GetRequestToken"/>
         /// </summary>
         public IToken GetRequestToken()
         {
-            IToken ret = this._session.GetRequestToken("POST");
+            IToken ret = _session.GetRequestToken("POST");
 
             return ret;
         }
@@ -114,7 +124,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public string GetUserAuthorizationUrlForToken(IToken requestToken)
         {
-            string ret = this._session.GetUserAuthorizationUrlForToken(requestToken);
+            string ret = _session.GetUserAuthorizationUrlForToken(requestToken);
 
             return ret;
         }
@@ -125,7 +135,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         public IToken ExchangeRequestTokenForAccessToken(IToken requestToken, string verificationCode)
         {
 
-            IToken ret = this._session.ExchangeRequestTokenForAccessToken(requestToken, "POST", verificationCode);
+            IToken ret = _session.ExchangeRequestTokenForAccessToken(requestToken, "POST", verificationCode);
 
             return ret;
         }
