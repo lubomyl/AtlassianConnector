@@ -1,4 +1,5 @@
 ﻿using AtlassianConnector.Service;
+using DevDefined.OAuth.Framework;
 using RestSharp;
 using RestSharp.Authenticators;
 using System;
@@ -76,6 +77,16 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
         }
 
         public K GetAgile<K>(string resource) where K : new()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Put(string resource, string resourceContext, byte[] content)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Post(string resource, string resourceContext, byte[] content)
         {
             throw new NotImplementedException();
         }

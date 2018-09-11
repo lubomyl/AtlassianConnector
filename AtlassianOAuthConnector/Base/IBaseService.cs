@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DevDefined.OAuth.Framework;
+using DevDefined.OAuth.Storage.Basic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,6 +27,24 @@ namespace AtlassianConnector.Service
         /// <param name="resourceContext">Url context specifying path to resource. (e. g. /api/agile/latest)</param>
         /// <returns></returns>
         K Get<K>(string resource, string resourceContext) where K : new();
+
+        /// <summary>
+        /// HTTP POST operation.
+        /// </summary>
+        /// <param name="resource">Resource identifier. (e. g. spaces, content, user?id=1)</param>
+        /// <param name="resourceContext">Url context specifying path to resource. (e. g. /api/agile/latest)</param>
+        /// <param name="content">Content to send.</param>
+        /// <returns></returns>
+        void Post(string resource, string resourceContext, byte[] content);
+
+        /// <summary>
+        /// HTTP PUT operation.
+        /// </summary>
+        /// <param name="resource">Resource identifier. (e. g. spaces, content, user?id=1)</param>
+        /// <param name="resourceContext">Url context specifying path to resource. (e. g. /api/agile/latest)</param>
+        /// <param name="content">Content to send.</param>
+        /// <returns></returns>
+        void Put(string resource, string resourceContext, byte[] content);
 
         /// <summary>
         /// Step 1 of OAuth1.0 dance. Obtains request token needed for further steps.
