@@ -86,6 +86,11 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
             throw new NotImplementedException();
         }
 
+        public void Post(string resource, string resourceContext, byte[] content)
+        {
+            throw new NotImplementedException();
+        }
+
         #region BaseService Members
 
         public string Username

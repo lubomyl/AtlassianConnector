@@ -100,11 +100,21 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.Put{K}(string, string, string)"/>
+        /// <see cref="IBaseService{T}.Put(string, string, byte)"/>
         /// </summary>
         public void Put(string resource, string resourceContext, byte[] content)
         {
             var response = _session.Request().ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebResponse();
+
+            response.Close();
+        }
+
+        /// <summary>
+        /// <see cref="IBaseService{T}.Post(string, string, byte)"/>
+        /// </summary>
+        public void Post(string resource, string resourceContext, byte[] content)
+        {
+            var response = _session.Request().ForMethod("POST").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebResponse();
 
             response.Close();
         }
@@ -139,6 +149,8 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
             return ret;
         }
+
+       
 
         public static ConfluenceService ConfluenceInstance
         {

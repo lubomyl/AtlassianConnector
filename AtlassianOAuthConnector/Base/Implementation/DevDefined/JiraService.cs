@@ -38,5 +38,9 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             base.Put(resource, RESOURCE_CONTEXT, content);
         }
 
+        public void PostResource(string resource, byte[] content)
+        {
+            base.Post(resource, RESOURCE_CONTEXT, content);
+        }
     }
 }

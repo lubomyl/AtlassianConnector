@@ -29,9 +29,17 @@ namespace AtlassianConnector.Service
         K Get<K>(string resource, string resourceContext) where K : new();
 
         /// <summary>
+        /// HTTP POST operation.
+        /// </summary>
+        /// <param name="resource">Resource identifier. (e. g. spaces, content, user?id=1)</param>
+        /// <param name="resourceContext">Url context specifying path to resource. (e. g. /api/agile/latest)</param>
+        /// <param name="content">Content to send.</param>
+        /// <returns></returns>
+        void Post(string resource, string resourceContext, byte[] content);
+
+        /// <summary>
         /// HTTP PUT operation.
         /// </summary>
-        /// <typeparam name="K">Result of Put operation. Might be some type of Response object or deserialized model class object.</typeparam>
         /// <param name="resource">Resource identifier. (e. g. spaces, content, user?id=1)</param>
         /// <param name="resourceContext">Url context specifying path to resource. (e. g. /api/agile/latest)</param>
         /// <param name="content">Content to send.</param>
