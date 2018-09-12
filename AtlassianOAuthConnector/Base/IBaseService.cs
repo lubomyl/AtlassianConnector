@@ -2,6 +2,7 @@
 using DevDefined.OAuth.Storage.Basic;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,7 +36,7 @@ namespace AtlassianConnector.Service
         /// <param name="resourceContext">Url context specifying path to resource. (e. g. /api/agile/latest)</param>
         /// <param name="content">Content to send.</param>
         /// <returns></returns>
-        void Post(string resource, string resourceContext, byte[] content);
+        void Post(string resource, string resourceContext, FileInfo file, byte[] content, string contentType);
 
         /// <summary>
         /// HTTP PUT operation.

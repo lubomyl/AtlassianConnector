@@ -1,6 +1,7 @@
 ﻿using DevDefined.OAuth.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,9 +39,14 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             base.Put(resource, RESOURCE_CONTEXT, content);
         }
 
-        public void PostResource(string resource, byte[] content)
+        public void PostResourceContent(string resource, byte[] content)
         {
-            base.Post(resource, RESOURCE_CONTEXT, content);
+            base.Post(resource, RESOURCE_CONTEXT, null, content);
+        }
+
+        public void PostResourceFile(string resource, FileInfo file)
+        {
+            base.Post(resource, RESOURCE_CONTEXT, file, null, "multipart/form-data");
         }
     }
 }

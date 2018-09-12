@@ -4,6 +4,7 @@ using RestSharp;
 using RestSharp.Authenticators;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -86,7 +87,7 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
             throw new NotImplementedException();
         }
 
-        public void Post(string resource, string resourceContext, byte[] content)
+        public void Post(string resource, string resourceContext, FileInfo file, byte[] content, string contentType)
         {
             throw new NotImplementedException();
         }
