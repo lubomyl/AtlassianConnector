@@ -92,6 +92,16 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
             throw new NotImplementedException();
         }
 
+        public void Delete(string resource, string resourceContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        public K PostWithResponse<K>(string resource, string resourceContext, byte[] content) where K : new()
+        {
+            throw new NotImplementedException();
+        }
+
         #region BaseService Members
 
         public string Username

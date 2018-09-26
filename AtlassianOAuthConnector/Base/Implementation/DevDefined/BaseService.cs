@@ -118,7 +118,6 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public void Post(string resource, string resourceContext, FileInfo file = null, byte[] content = null, string contentType = "application/json")
         {
-            /*
             var request = _session.Request();
             request.ForMethod("POST");
             request.ForUri(new Uri(_baseUrl + resourceContext + resource));
@@ -133,11 +132,40 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                 request.WithRawContentType(contentType);
                 request.WithRawContent(content);
 
-                var response = request.ReadBody();
-            }
-            */
+                var response = request.ToWebResponse();
 
-            var response = _session.Request().ForMethod("POST").WithRawContentType(contentType).WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebResponse();
+                response.Close();
+            }    
+        }
+
+        /// <summary>
+        /// <see cref="IBaseService{T}.PostWithResponse(string, string, byte)"/>
+        /// </summary>
+        public K PostWithResponse<K>(string resource, string resourceContext, byte[] content) where K : new()
+        {
+            var request = _session.Request();
+            request.ForMethod("POST");
+            request.ForUri(new Uri(_baseUrl + resourceContext + resource));
+            request.WithTimeout(5000);
+
+            request.WithRawContentType("application/json");
+            request.WithRawContent(content);
+
+            var response = request.ReadBody();
+
+            if (response != null)
+            {
+                return JsonConvert.DeserializeObject<K>(response);
+            }
+            else
+            {
+                return default(K);
+            }
+        }
+
+        public void Delete(string resource, string resourceContext)
+        {
+            var response = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebResponse();
 
             response.Close();
         }
