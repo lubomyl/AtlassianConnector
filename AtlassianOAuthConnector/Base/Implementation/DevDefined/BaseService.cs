@@ -3,9 +3,13 @@ using DevDefined.OAuth.Consumer;
 using DevDefined.OAuth.Framework;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -110,11 +114,58 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.Post(string, string, byte)"/>
+        /// <see cref="IBaseService{T}.Post(string, string, byte, string)"/>
         /// </summary>
-        public void Post(string resource, string resourceContext, byte[] content)
+        public void Post(string resource, string resourceContext, FileInfo file = null, byte[] content = null, string contentType = "application/json")
         {
-            var response = _session.Request().ForMethod("POST").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebResponse();
+            var request = _session.Request();
+            request.ForMethod("POST");
+            request.ForUri(new Uri(_baseUrl + resourceContext + resource));
+            request.WithTimeout(5000);
+
+            if (contentType.Equals("multipart/form-data")) {
+                request.WithHeaders(new Dictionary<string, string> { { "X-Atlassian-Token", "no-check" } });
+                PostMultiPart(request, file);
+            }
+            else
+            {
+                request.WithRawContentType(contentType);
+                request.WithRawContent(content);
+
+                var response = request.ToWebResponse();
+
+                response.Close();
+            }    
+        }
+
+        /// <summary>
+        /// <see cref="IBaseService{T}.PostWithResponse(string, string, byte)"/>
+        /// </summary>
+        public K PostWithResponse<K>(string resource, string resourceContext, byte[] content) where K : new()
+        {
+            var request = _session.Request();
+            request.ForMethod("POST");
+            request.ForUri(new Uri(_baseUrl + resourceContext + resource));
+            request.WithTimeout(5000);
+
+            request.WithRawContentType("application/json");
+            request.WithRawContent(content);
+
+            var response = request.ReadBody();
+
+            if (response != null)
+            {
+                return JsonConvert.DeserializeObject<K>(response);
+            }
+            else
+            {
+                return default(K);
+            }
+        }
+
+        public void Delete(string resource, string resourceContext)
+        {
+            var response = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebResponse();
 
             response.Close();
         }
@@ -150,7 +201,88 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             return ret;
         }
 
-       
+        //DevDefined.OAuth library doesn't support multipart/form-data contentType
+        //This method takes 
+        private bool PostMultiPart(IConsumerRequest devDefinedRequest, FileInfo filePath)
+        {
+            HttpWebResponse response = null;
+            HttpWebRequest request = devDefinedRequest.ToWebRequest();
+
+            try
+            {
+                var boundary = string.Format("----------{0:N}", Guid.NewGuid());
+                var content = new MemoryStream();
+                var writer = new StreamWriter(content);
+
+                var fs = new FileStream(filePath.FullName, FileMode.Open, FileAccess.Read);
+                var data = new byte[fs.Length];
+                fs.Read(data, 0, data.Length);
+                fs.Close();
+
+                writer.WriteLine("--{0}", boundary);
+                writer.WriteLine("Content-Disposition: form-data; name=\"file\"; filename=\"{0}\"", filePath.Name);
+                writer.WriteLine("Content-Type: application/octet-stream");
+                writer.WriteLine();
+                writer.Flush();
+
+                content.Write(data, 0, data.Length);
+
+                writer.WriteLine();
+
+                writer.WriteLine("--" + boundary + "--");
+                writer.Flush();
+                content.Seek(0, SeekOrigin.Begin);
+
+                if (request == null)
+                {
+                    return false;
+                }
+
+                request.ContentType = string.Format("multipart/form-data; boundary={0}", boundary);
+                request.ContentLength = content.Length;
+
+                using (Stream requestStream = request.GetRequestStream())
+                {
+                    content.WriteTo(requestStream);
+                    requestStream.Close();
+                }
+
+                using (response = request.GetResponse() as HttpWebResponse)
+                {
+                    if (response.StatusCode != HttpStatusCode.OK)
+                    {
+                        var reader = new StreamReader(response.GetResponseStream());
+                        return false;
+                    }
+
+                    return true;
+                }
+            }
+            catch (WebException wex)
+            {
+                if (wex.Response != null)
+                {
+                    using (var errorResponse = (HttpWebResponse)wex.Response)
+                    {
+                        var reader = new StreamReader(errorResponse.GetResponseStream());
+                    }
+                }
+
+                if (request != null)
+                {
+                    request.Abort();
+                }
+
+                return false;
+            }
+            finally
+            {
+                if (response != null)
+                {
+                    response.Close();
+                }
+            }
+        }
 
         public static ConfluenceService ConfluenceInstance
         {

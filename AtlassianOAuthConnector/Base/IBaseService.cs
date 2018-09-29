@@ -2,6 +2,7 @@
 using DevDefined.OAuth.Storage.Basic;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,9 +34,20 @@ namespace AtlassianConnector.Service
         /// </summary>
         /// <param name="resource">Resource identifier. (e. g. spaces, content, user?id=1)</param>
         /// <param name="resourceContext">Url context specifying path to resource. (e. g. /api/agile/latest)</param>
+        /// <param name="file">FileInfo object to send. Default null.</param>
+        /// <param name="content">Content to send. Default null.</param>
+        /// <param name="contentType">ContentType to send. Default application/json. Supporting multipart/form-data.</param>
+        /// <returns></returns>
+        void Post(string resource, string resourceContext, FileInfo file, byte[] content, string contentType);
+
+        /// <summary>
+        /// HTTP POST with response operation.
+        /// </summary>
+        /// <param name="resource">Resource identifier. (e. g. spaces, content, user?id=1)</param>
+        /// <param name="resourceContext">Url context specifying path to resource. (e. g. /api/agile/latest)</param>
         /// <param name="content">Content to send.</param>
         /// <returns></returns>
-        void Post(string resource, string resourceContext, byte[] content);
+        K PostWithResponse<K>(string resource, string resourceContext, byte[] content) where K : new();
 
         /// <summary>
         /// HTTP PUT operation.
@@ -45,6 +57,14 @@ namespace AtlassianConnector.Service
         /// <param name="content">Content to send.</param>
         /// <returns></returns>
         void Put(string resource, string resourceContext, byte[] content);
+
+        /// <summary>
+        /// HTTP DELETE operation.
+        /// </summary>
+        /// <param name="resource">Resource identifier. (e. g. spaces, content, user?id=1)</param>
+        /// <param name="resourceContext">Url context specifying path to resource. (e. g. /api/agile/latest)</param>
+        /// <returns></returns>
+        void Delete(string resource, string resourceContext);
 
         /// <summary>
         /// Step 1 of OAuth1.0 dance. Obtains request token needed for further steps.
