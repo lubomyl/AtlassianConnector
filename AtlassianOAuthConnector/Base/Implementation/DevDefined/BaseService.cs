@@ -91,13 +91,19 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public K Get<K>(string resource, string resourceContext) where K : new()
         {
-            var response = _session.Request().Get().ForUrl(_baseUrl + resourceContext + resource).ReadBody();
-
-            if (response != null)
+            try
             {
-                return JsonConvert.DeserializeObject<K>(response);
-            }
-            else
+                var response = _session.Request().Get().ForUrl(_baseUrl + resourceContext + resource).ReadBody();
+
+                if (response != null)
+                {
+                    return JsonConvert.DeserializeObject<K>(response);
+                }
+                else
+                {
+                    return default(K);
+                }
+            } catch(Exception ex)
             {
                 return default(K);
             }
