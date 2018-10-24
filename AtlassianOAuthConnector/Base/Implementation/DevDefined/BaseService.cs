@@ -1,4 +1,6 @@
-﻿using AtlassianConnector.Service;
+﻿using AtlassianConnector.Model;
+using AtlassianConnector.Model.Exceptions;
+using AtlassianConnector.Service;
 using DevDefined.OAuth.Consumer;
 using DevDefined.OAuth.Framework;
 using Newtonsoft.Json;
@@ -157,16 +159,38 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             request.WithRawContentType("application/json");
             request.WithRawContent(content);
 
-            var response = request.ReadBody();
+            HttpWebRequest webRequest = request.ToWebRequest();
 
-            if (response != null)
+            try
             {
-                return JsonConvert.DeserializeObject<K>(response);
+                using (var response = webRequest.GetResponse() as HttpWebResponse)
+                {
+                    if (response != null)
+                    {
+                        using (var reader = new StreamReader(response.GetResponseStream()))
+                        {
+                            return JsonConvert.DeserializeObject<K>(reader.ReadToEnd());
+                        }
+                    }
+                }
             }
-            else
+            catch (WebException wex)
             {
-                return default(K);
+                if (wex.Response != null)
+                {
+                    using (var errorResponse = wex.Response as HttpWebResponse)
+                    {
+                        using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                        {
+                            ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
+
+                            throw new MissingParameterException(er);
+                        }
+                    }
+                }
             }
+
+            return default(K);
         }
 
         public void Delete(string resource, string resourceContext)
