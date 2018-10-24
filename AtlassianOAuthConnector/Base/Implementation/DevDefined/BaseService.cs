@@ -93,22 +93,38 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public K Get<K>(string resource, string resourceContext) where K : new()
         {
+            var webRequest = _session.Request().Get().ForUrl(_baseUrl + resourceContext + resource).ToWebRequest();
+
             try
             {
-                var response = _session.Request().Get().ForUrl(_baseUrl + resourceContext + resource).ReadBody();
-
-                if (response != null)
+                using (var response = webRequest.GetResponse() as HttpWebResponse)
                 {
-                    return JsonConvert.DeserializeObject<K>(response);
+                    if (response != null)
+                    {
+                        using (var reader = new StreamReader(response.GetResponseStream()))
+                        {
+                            return JsonConvert.DeserializeObject<K>(reader.ReadToEnd());
+                        }
+                    }
                 }
-                else
-                {
-                    return default(K);
-                }
-            } catch(Exception ex)
-            {
-                return default(K);
             }
+            catch (WebException wex)
+            {
+                if (wex.Response != null)
+                {
+                    using (var errorResponse = wex.Response as HttpWebResponse)
+                    {
+                        using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                        {
+                            ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
+
+                            throw new JiraException(er);
+                        }
+                    }
+                }
+            }
+
+            return default(K);
         }
 
         /// <summary>
@@ -116,9 +132,27 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public void Put(string resource, string resourceContext, byte[] content)
         {
-            var response = _session.Request().ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebResponse();
+            var webRequest = _session.Request().ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
 
-            response.Close();
+            try
+            {
+                webRequest.GetResponse();
+            }
+            catch (WebException wex)
+            {
+                if (wex.Response != null)
+                {
+                    using (var errorResponse = wex.Response as HttpWebResponse)
+                    {
+                        using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                        {
+                            ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
+
+                            throw new JiraException(er);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -129,7 +163,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             var request = _session.Request();
             request.ForMethod("POST");
             request.ForUri(new Uri(_baseUrl + resourceContext + resource));
-            request.WithTimeout(5000);
+            request.WithTimeout(60000);
 
             if (contentType.Equals("multipart/form-data")) {
                 request.WithHeaders(new Dictionary<string, string> { { "X-Atlassian-Token", "no-check" } });
@@ -140,9 +174,27 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                 request.WithRawContentType(contentType);
                 request.WithRawContent(content);
 
-                var response = request.ToWebResponse();
+                var webRequest = request.ToWebRequest();
 
-                response.Close();
+                try
+                {
+                    webRequest.GetResponse();
+                }
+                catch (WebException wex)
+                {
+                    if (wex.Response != null)
+                    {
+                        using (var errorResponse = wex.Response as HttpWebResponse)
+                        {
+                            using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                            {
+                                ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
+
+                                throw new JiraException(er);
+                            }
+                        }
+                    }
+                }
             }    
         }
 
@@ -154,7 +206,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             var request = _session.Request();
             request.ForMethod("POST");
             request.ForUri(new Uri(_baseUrl + resourceContext + resource));
-            request.WithTimeout(5000);
+            request.WithTimeout(60000);
 
             request.WithRawContentType("application/json");
             request.WithRawContent(content);
@@ -184,7 +236,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                         {
                             ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
 
-                            throw new MissingParameterException(er);
+                            throw new JiraException(er);
                         }
                     }
                 }
@@ -195,9 +247,26 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
         public void Delete(string resource, string resourceContext)
         {
-            var response = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebResponse();
+                var webRequest = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).WithTimeout(60000).ToWebRequest();
+            try
+            {
+                webRequest.GetResponse();
+            }
+            catch (WebException wex)
+            {
+                if (wex.Response != null)
+                {
+                    using (var errorResponse = wex.Response as HttpWebResponse)
+                    {
+                        using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                        {
+                            ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
 
-            response.Close();
+                            throw new JiraException(er);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -233,9 +302,9 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
         //DevDefined.OAuth library doesn't support multipart/form-data contentType
         //This method takes 
-        private bool PostMultiPart(IConsumerRequest devDefinedRequest, FileInfo filePath)
+        private void PostMultiPart(IConsumerRequest devDefinedRequest, FileInfo filePath)
         {
-            HttpWebResponse response = null;
+            WebResponse response = null;
             HttpWebRequest request = devDefinedRequest.ToWebRequest();
 
             try
@@ -263,53 +332,27 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                 writer.Flush();
                 content.Seek(0, SeekOrigin.Begin);
 
-                if (request == null)
-                {
-                    return false;
-                }
-
                 request.ContentType = string.Format("multipart/form-data; boundary={0}", boundary);
                 request.ContentLength = content.Length;
 
                 using (Stream requestStream = request.GetRequestStream())
                 {
                     content.WriteTo(requestStream);
-                    requestStream.Close();
-                }
-
-                using (response = request.GetResponse() as HttpWebResponse)
-                {
-                    if (response.StatusCode != HttpStatusCode.OK)
-                    {
-                        var reader = new StreamReader(response.GetResponseStream());
-                        return false;
-                    }
-
-                    return true;
                 }
             }
             catch (WebException wex)
             {
                 if (wex.Response != null)
                 {
-                    using (var errorResponse = (HttpWebResponse)wex.Response)
+                    using (var errorResponse = wex.Response as HttpWebResponse)
                     {
-                        var reader = new StreamReader(errorResponse.GetResponseStream());
+                        using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                        {
+                            ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
+
+                            throw new JiraException(er);
+                        }
                     }
-                }
-
-                if (request != null)
-                {
-                    request.Abort();
-                }
-
-                return false;
-            }
-            finally
-            {
-                if (response != null)
-                {
-                    response.Close();
                 }
             }
         }
