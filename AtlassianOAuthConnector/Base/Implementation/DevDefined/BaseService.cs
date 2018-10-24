@@ -132,9 +132,27 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public void Put(string resource, string resourceContext, byte[] content)
         {
-            var response = _session.Request().ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebResponse();
+            var webRequest = _session.Request().ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
 
-            response.Close();
+            try
+            {
+                webRequest.GetResponse();
+            }
+            catch (WebException wex)
+            {
+                if (wex.Response != null)
+                {
+                    using (var errorResponse = wex.Response as HttpWebResponse)
+                    {
+                        using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                        {
+                            ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
+
+                            throw new JiraException(er);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
