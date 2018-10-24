@@ -93,22 +93,38 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public K Get<K>(string resource, string resourceContext) where K : new()
         {
+            var webRequest = _session.Request().Get().ForUrl(_baseUrl + resourceContext + resource).ToWebRequest();
+
             try
             {
-                var response = _session.Request().Get().ForUrl(_baseUrl + resourceContext + resource).ReadBody();
-
-                if (response != null)
+                using (var response = webRequest.GetResponse() as HttpWebResponse)
                 {
-                    return JsonConvert.DeserializeObject<K>(response);
+                    if (response != null)
+                    {
+                        using (var reader = new StreamReader(response.GetResponseStream()))
+                        {
+                            return JsonConvert.DeserializeObject<K>(reader.ReadToEnd());
+                        }
+                    }
                 }
-                else
-                {
-                    return default(K);
-                }
-            } catch(Exception ex)
-            {
-                return default(K);
             }
+            catch (WebException wex)
+            {
+                if (wex.Response != null)
+                {
+                    using (var errorResponse = wex.Response as HttpWebResponse)
+                    {
+                        using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                        {
+                            ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
+
+                            throw new JiraException(er);
+                        }
+                    }
+                }
+            }
+
+            return default(K);
         }
 
         /// <summary>
@@ -184,10 +200,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                         {
                             ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
 
-                            if (errorResponse.StatusCode == HttpStatusCode.BadRequest)
-                            {
-                                throw new MissingParameterException(er);
-                            }
+                            throw new JiraException(er);
                         }
                     }
                 }
@@ -198,9 +211,27 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
         public void Delete(string resource, string resourceContext)
         {
-            var response = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebResponse();
+            
+                var webRequest = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
+            try
+            {
+                webRequest.GetResponse();
+            }
+            catch (WebException wex)
+            {
+                if (wex.Response != null)
+                {
+                    using (var errorResponse = wex.Response as HttpWebResponse)
+                    {
+                        using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                        {
+                            ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
 
-            response.Close();
+                            throw new JiraException(er);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>

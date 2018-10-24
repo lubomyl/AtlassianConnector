@@ -9,6 +9,7 @@ namespace AtlassianConnector.Model
     public class ErrorResponse
     {
 
+        public string[] ErrorMessages { get; set; }
         public Dictionary<string, string> Errors { get; set; }
 
     }

@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace AtlassianConnector.Model.Exceptions
 {
-    public class MissingParameterException : Exception
+    public class JiraException : Exception
     {
 
         public ErrorResponse ErrorResponse { get; set; }
 
-        public MissingParameterException(ErrorResponse er) : base()
+        public JiraException(ErrorResponse er) : base()
         {
             this.ErrorResponse = er;
         }
