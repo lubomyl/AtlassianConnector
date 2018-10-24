@@ -184,7 +184,10 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                         {
                             ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
 
-                            throw new MissingParameterException(er);
+                            if (errorResponse.StatusCode == HttpStatusCode.BadRequest)
+                            {
+                                throw new MissingParameterException(er);
+                            }
                         }
                     }
                 }
