@@ -146,7 +146,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
             try
             {
-                webRequest.GetResponse();
+                using (var response = webRequest.GetResponse() as HttpWebResponse);
             }
             catch (WebException wex)
             {
@@ -197,7 +197,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
                 try
                 {
-                    webRequest.GetResponse();
+                    using (var response = webRequest.GetResponse() as HttpWebResponse);
                 }
                 catch (WebException wex)
                 {
@@ -282,10 +282,11 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
         public void Delete(string resource, string resourceContext)
         {
-                var webRequest = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).WithTimeout(60000).ToWebRequest();
+            var webRequest = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).WithTimeout(60000).ToWebRequest();
+
             try
             {
-                webRequest.GetResponse();
+                using (var response = webRequest.GetResponse() as HttpWebResponse);
             }
             catch (WebException wex)
             {
