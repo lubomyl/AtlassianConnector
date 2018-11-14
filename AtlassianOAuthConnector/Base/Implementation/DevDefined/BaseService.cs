@@ -1,5 +1,6 @@
 ﻿using AtlassianConnector.Model;
 using AtlassianConnector.Model.Exceptions;
+using AtlassianConnector.Properties;
 using AtlassianConnector.Service;
 using DevDefined.OAuth.Consumer;
 using DevDefined.OAuth.Framework;
@@ -53,7 +54,8 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         {
             this._baseUrl = baseUrl;
 
-            X509Certificate2 certificate = new X509Certificate2(Properties.Settings.Default.CertificatePath, Properties.Settings.Default.CertificateSecret);
+            X509Certificate2 certificate = new X509Certificate2(Resources.certificate,
+                Properties.Settings.Default.CertificateSecret);
 
             string requestTokenUrl = this._baseUrl + this._requestTokenUrlContext;
             string userAuthorizeTokenUrl = this._baseUrl + this._userAuthorizeTokenUrlContext;
@@ -93,7 +95,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public K Get<K>(string resource, string resourceContext) where K : new()
         {
-            var webRequest = _session.Request().Get().ForUrl(_baseUrl + resourceContext + resource).ToWebRequest();
+            var webRequest = _session.Request().WithTimeout(5000).Get().ForUrl(_baseUrl + resourceContext + resource).ToWebRequest();
 
             try
             {
@@ -122,6 +124,14 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                         }
                     }
                 }
+                else
+                {
+                    ErrorResponse er = new ErrorResponse();
+                    er.ErrorMessages = new string[1];
+                    er.ErrorMessages[0] = wex.Message;
+
+                    throw new JiraException(er);
+                }
             }
 
             return default(K);
@@ -132,7 +142,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public void Put(string resource, string resourceContext, byte[] content)
         {
-            var webRequest = _session.Request().ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
+            var webRequest = _session.Request().WithTimeout(5000).ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
 
             try
             {
@@ -152,6 +162,14 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                         }
                     }
                 }
+                else
+                {
+                    ErrorResponse er = new ErrorResponse();
+                    er.ErrorMessages = new string[1];
+                    er.ErrorMessages[0] = wex.Message;
+
+                    throw new JiraException(er);
+                }
             }
         }
 
@@ -163,10 +181,11 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             var request = _session.Request();
             request.ForMethod("POST");
             request.ForUri(new Uri(_baseUrl + resourceContext + resource));
-            request.WithTimeout(60000);
+            request.WithTimeout(5000);
 
             if (contentType.Equals("multipart/form-data")) {
                 request.WithHeaders(new Dictionary<string, string> { { "X-Atlassian-Token", "no-check" } });
+                request.WithTimeout(20000);
                 PostMultiPart(request, file);
             }
             else
@@ -194,6 +213,14 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                             }
                         }
                     }
+                    else
+                    {
+                        ErrorResponse er = new ErrorResponse();
+                        er.ErrorMessages = new string[1];
+                        er.ErrorMessages[0] = wex.Message;
+
+                        throw new JiraException(er);
+                    }
                 }
             }    
         }
@@ -206,7 +233,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             var request = _session.Request();
             request.ForMethod("POST");
             request.ForUri(new Uri(_baseUrl + resourceContext + resource));
-            request.WithTimeout(60000);
+            request.WithTimeout(5000);
 
             request.WithRawContentType("application/json");
             request.WithRawContent(content);
@@ -240,6 +267,14 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                         }
                     }
                 }
+                else
+                {
+                    ErrorResponse er = new ErrorResponse();
+                    er.ErrorMessages = new string[1];
+                    er.ErrorMessages[0] = wex.Message;
+
+                    throw new JiraException(er);
+                }
             }
 
             return default(K);
@@ -265,6 +300,14 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                             throw new JiraException(er);
                         }
                     }
+                }
+                else
+                {
+                    ErrorResponse er = new ErrorResponse();
+                    er.ErrorMessages = new string[1];
+                    er.ErrorMessages[0] = wex.Message;
+
+                    throw new JiraException(er);
                 }
             }
         }
@@ -353,6 +396,14 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                             throw new JiraException(er);
                         }
                     }
+                }
+                else
+                {
+                    ErrorResponse er = new ErrorResponse();
+                    er.ErrorMessages = new string[1];
+                    er.ErrorMessages[0] = wex.Message;
+
+                    throw new JiraException(er);
                 }
             }
         }
