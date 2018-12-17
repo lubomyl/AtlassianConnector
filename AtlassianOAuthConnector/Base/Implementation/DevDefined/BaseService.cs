@@ -95,10 +95,10 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public K Get<K>(string resource, string resourceContext) where K : new()
         {
-            var webRequest = _session.Request().WithTimeout(5000).Get().ForUrl(_baseUrl + resourceContext + resource).ToWebRequest();
-
             try
             {
+                var webRequest = _session.Request().WithTimeout(5000).Get().ForUrl(_baseUrl + resourceContext + resource).ToWebRequest();
+
                 using (var response = webRequest.GetResponse() as HttpWebResponse)
                 {
                     if (response != null)
@@ -142,11 +142,11 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public void Put(string resource, string resourceContext, byte[] content)
         {
-            var webRequest = _session.Request().WithTimeout(5000).ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
-
             try
             {
-                webRequest.GetResponse();
+                var webRequest = _session.Request().WithTimeout(5000).ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
+
+                using (var response = webRequest.GetResponse() as HttpWebResponse);
             }
             catch (WebException wex)
             {
@@ -193,11 +193,11 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                 request.WithRawContentType(contentType);
                 request.WithRawContent(content);
 
-                var webRequest = request.ToWebRequest();
-
                 try
                 {
-                    webRequest.GetResponse();
+                    var webRequest = request.ToWebRequest();
+
+                    using (var response = webRequest.GetResponse() as HttpWebResponse);
                 }
                 catch (WebException wex)
                 {
@@ -238,10 +238,10 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             request.WithRawContentType("application/json");
             request.WithRawContent(content);
 
-            HttpWebRequest webRequest = request.ToWebRequest();
-
             try
             {
+                HttpWebRequest webRequest = request.ToWebRequest();
+
                 using (var response = webRequest.GetResponse() as HttpWebResponse)
                 {
                     if (response != null)
@@ -282,10 +282,11 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
         public void Delete(string resource, string resourceContext)
         {
-                var webRequest = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).WithTimeout(60000).ToWebRequest();
             try
             {
-                webRequest.GetResponse();
+                var webRequest = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).WithTimeout(60000).ToWebRequest();
+
+                using (var response = webRequest.GetResponse() as HttpWebResponse);
             }
             catch (WebException wex)
             {
@@ -337,7 +338,6 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// </summary>
         public IToken ExchangeRequestTokenForAccessToken(IToken requestToken, string verificationCode)
         {
-
             IToken ret = _session.ExchangeRequestTokenForAccessToken(requestToken, "POST", verificationCode);
 
             return ret;
@@ -347,11 +347,10 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         //This method takes 
         private void PostMultiPart(IConsumerRequest devDefinedRequest, FileInfo filePath)
         {
-            WebResponse response = null;
-            HttpWebRequest request = devDefinedRequest.ToWebRequest();
-
             try
             {
+                HttpWebRequest request = devDefinedRequest.ToWebRequest();
+
                 var boundary = string.Format("----------{0:N}", Guid.NewGuid());
                 var content = new MemoryStream();
                 var writer = new StreamWriter(content);
