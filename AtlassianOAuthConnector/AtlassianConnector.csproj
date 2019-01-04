@@ -61,10 +61,12 @@
   <ItemGroup>
     <Compile Include="Base\IBaseOAuthService.cs" />
     <Compile Include="Base\IBaseService.cs" />
-    <Compile Include="Base\Implementation\DevDefined\BaseOAuthService.cs" />
-    <Compile Include="Base\Implementation\DevDefined\ConfluenceService.cs" />
-    <Compile Include="Base\Implementation\DevDefined\JiraService.cs" />
-    <Compile Include="Base\Implementation\RestSharp\BaseService.cs" />
+    <Compile Include="Base\Implementation\DevDefined\OAuth\BaseOAuthService.cs" />
+    <Compile Include="Base\Implementation\DevDefined\OAuth\ConfluenceService.cs" />
+    <Compile Include="Base\Implementation\DevDefined\OAuth\JiraService.cs" />
+    <Compile Include="Base\Implementation\RestSharp\BasicAuthentication\BaseService.cs" />
+    <Compile Include="Base\Implementation\RestSharp\BasicAuthentication\ConfluenceService.cs" />
+    <Compile Include="Base\Implementation\RestSharp\BasicAuthentication\JiraService.cs" />
     <Compile Include="Model\ErrorResponse.cs" />
     <Compile Include="Model\Exceptions\JiraException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

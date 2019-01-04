@@ -14,25 +14,31 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
     //TODO implement error logging
     public class BaseService : RestClient, IBaseService
     {
+        private static JiraService _jiraInstance = null;
+        private static ConfluenceService _confluenceInstance = null;
 
-        private string _username = string.Empty;
-        private string _password = string.Empty;
+        private string _baseUrl;
+        private string _username;
+        private string _password;
 
-        private const string RestUrl = "https://lubomyl3.atlassian.net/wiki/rest/api";
-
-        public BaseService()
+        protected BaseService()
         {
-            this.BaseUrl = new Uri(RestUrl);
         }
 
-        public BaseService(string username, string password)
+        public void InitializeBasicAuthenticationAuthenticator(string baseUrl, string username, string password)
         {
-            this.BaseUrl = new Uri(RestUrl);
+            this._baseUrl = baseUrl;
             this._username = username;
             this._password = password;
 
             this.Authenticator = new HttpBasicAuthenticator(_username, _password);
         }
+
+        /*
+         * No reinitalization method
+         * Username and Password are not stored for reinitalization
+         * Every VS restart needs new authentication with user input
+         */
 
         public T Get<T>(string resource, string resourceContext) where T : new()
         {
@@ -48,37 +54,6 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
             {
                 return default(T);
             }
-        }
-
-        public Task<T> GetAsync<T>(IRestRequest request) where T : new()
-        {
-            var taskCompletionSource = new TaskCompletionSource<T>();
-
-            ExecuteAsync<T>(request, (response, handle) =>
-                taskCompletionSource.SetResult(response.Data));
-
-            return taskCompletionSource.Task;
-        }
-
-        //Doesn't support RSA with separate certificate yet https://github.com/restsharp/RestSharp/issues/1088
-        public Object GetRequestToken()
-        {
-            throw new NotImplementedException();
-        }
-
-        public string GetUserAuthorizationUrlForToken(Object requestToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Object ExchangeRequestTokenForAccessToken(Object requestToken, string verificationCode)
-        {
-            throw new NotImplementedException();
-        }
-
-        public K GetAgile<K>(string resource) where K : new()
-        {
-            throw new NotImplementedException();
         }
 
         public void Put(string resource, string resourceContext, byte[] content)
@@ -101,33 +76,31 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
             throw new NotImplementedException();
         }
 
-        #region BaseService Members
-
-        public string Username
+        public static ConfluenceService ConfluenceInstance
         {
             get
             {
-                return this._username;
-            }
-            set
-            {
-                this._username = value;
+                if (_confluenceInstance == null)
+                {
+                    _confluenceInstance = new ConfluenceService();
+                }
+
+                return _confluenceInstance;
             }
         }
 
-        public string Password
+        public static JiraService JiraInstance
         {
             get
             {
-                return this._password;
-            }
-            set
-            {
-                this._password = value;
+                if (_jiraInstance == null)
+                {
+                    _jiraInstance = new JiraService();
+                }
+
+                return _jiraInstance;
             }
         }
-
-        #endregion
 
     }
 }

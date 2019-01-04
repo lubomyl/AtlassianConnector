@@ -21,8 +21,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         public JiraService() : base() {
             base.InitializeUris(REQUEST_TOKEN_URL_CONTEXT, 
                 USER_AUTHORIZE_TOKEN_URL_CONTEXT, 
-                ACCESS_TOKEN_URL_CONTEXT, 
-                RESOURCE_CONTEXT);
+                ACCESS_TOKEN_URL_CONTEXT);
         }
 
         public K GetResource<K>(string resource) where K : new()

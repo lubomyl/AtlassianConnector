@@ -39,7 +39,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         {
         }
 
-        protected void InitializeUris(string requestTokenUrl, string userAuthorizeTokenUrlContext, string accessTokenUrlContext, string resourceContext)
+        protected void InitializeUris(string requestTokenUrl, string userAuthorizeTokenUrlContext, string accessTokenUrlContext)
         {
             this._requestTokenUrlContext = requestTokenUrl;
             this._userAuthorizeTokenUrlContext = userAuthorizeTokenUrlContext;
@@ -90,7 +90,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
 
         /// <summary>
-        /// <see cref="IBaseService{T}.Get{K}(string, string)"/>
+        /// <see cref="IBaseOAuthService{T}.Get{K}(string, string)"/>
         /// </summary>
         public K Get<K>(string resource, string resourceContext) where K : new()
         {
@@ -137,7 +137,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.Put(string, string, byte)"/>
+        /// <see cref="IBaseOAuthService{T}.Put(string, string, byte)"/>
         /// </summary>
         public void Put(string resource, string resourceContext, byte[] content)
         {
@@ -173,7 +173,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.Post(string, string, byte, string)"/>
+        /// <see cref="IBaseOAuthService{T}.Post(string, string, byte, string)"/>
         /// </summary>
         public void Post(string resource, string resourceContext, FileInfo file = null, byte[] content = null, string contentType = "application/json")
         {
@@ -225,7 +225,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.PostWithResponse(string, string, byte)"/>
+        /// <see cref="IBaseOAuthService{T}.PostWithResponse(string, string, byte)"/>
         /// </summary>
         public K PostWithResponse<K>(string resource, string resourceContext, byte[] content) where K : new()
         {
@@ -313,7 +313,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.GetRequestToken"/>
+        /// <see cref="IBaseOAuthService{T}.GetRequestToken"/>
         /// </summary>
         public IToken GetRequestToken()
         {
@@ -323,7 +323,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.GetUserAuthorizationUrlForToken(T)"/>
+        /// <see cref="IBaseOAuthService{T}.GetUserAuthorizationUrlForToken(T)"/>
         /// </summary>
         public string GetUserAuthorizationUrlForToken(IToken requestToken)
         {
@@ -333,7 +333,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.ExchangeRequestTokenForAccessToken(T, string)"/>
+        /// <see cref="IBaseOAuthService{T}.ExchangeRequestTokenForAccessToken(T, string)"/>
         /// </summary>
         public IToken ExchangeRequestTokenForAccessToken(IToken requestToken, string verificationCode)
         {
