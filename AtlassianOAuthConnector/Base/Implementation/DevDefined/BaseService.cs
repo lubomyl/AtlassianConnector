@@ -181,15 +181,15 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             var request = _session.Request();
             request.ForMethod("POST");
             request.ForUri(new Uri(_baseUrl + resourceContext + resource));
-            request.WithTimeout(5000);
-
+            
             if (contentType.Equals("multipart/form-data")) {
                 request.WithHeaders(new Dictionary<string, string> { { "X-Atlassian-Token", "no-check" } });
-                request.WithTimeout(20000);
+                request.WithTimeout(50000);
                 PostMultiPart(request, file);
             }
             else
             {
+                request.WithTimeout(5000);
                 request.WithRawContentType(contentType);
                 request.WithRawContent(content);
 
@@ -380,7 +380,11 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                 using (Stream requestStream = request.GetRequestStream())
                 {
                     content.WriteTo(requestStream);
+                    content.Close();
+                    writer.Close();
                 }
+
+                using (var response = request.GetResponse()) ;
             }
             catch (WebException wex)
             {
