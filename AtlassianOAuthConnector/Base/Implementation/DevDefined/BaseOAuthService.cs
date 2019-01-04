@@ -1,7 +1,6 @@
 ﻿using AtlassianConnector.Model;
 using AtlassianConnector.Model.Exceptions;
 using AtlassianConnector.Properties;
-using AtlassianConnector.Service;
 using DevDefined.OAuth.Consumer;
 using DevDefined.OAuth.Framework;
 using Newtonsoft.Json;
@@ -25,7 +24,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
     /// DevDefined.OAuth library concrete implementation of IBaseService.
     /// Singleton class pattern used to not to reinitialize OAuth session on every reference of this class.
     /// </summary>
-    public class BaseService : IBaseService<IToken>
+    public class BaseOAuthService : IBaseOAuthService<IToken>
     {
         private static OAuthSession _session;
 
@@ -36,7 +35,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
         private string _requestTokenUrlContext, _userAuthorizeTokenUrlContext, _accessTokenUrlContext;
 
-        protected BaseService()
+        protected BaseOAuthService()
         {
         }
 

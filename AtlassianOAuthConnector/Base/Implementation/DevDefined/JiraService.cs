@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AtlassianConnector.Base.Implementation.DevDefined
 {
-    public class JiraService : BaseService
+    public class JiraService : BaseOAuthService
     {
 
         private const string REQUEST_TOKEN_URL_CONTEXT = "/plugins/servlet/oauth/request-token";

@@ -59,8 +59,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Base\IBaseOAuthService.cs" />
     <Compile Include="Base\IBaseService.cs" />
-    <Compile Include="Base\Implementation\DevDefined\BaseService.cs" />
+    <Compile Include="Base\Implementation\DevDefined\BaseOAuthService.cs" />
     <Compile Include="Base\Implementation\DevDefined\ConfluenceService.cs" />
     <Compile Include="Base\Implementation\DevDefined\JiraService.cs" />
     <Compile Include="Base\Implementation\RestSharp\BaseService.cs" />

@@ -1,5 +1,4 @@
-﻿using AtlassianConnector.Service;
-using DevDefined.OAuth.Framework;
+﻿using DevDefined.OAuth.Framework;
 using RestSharp;
 using RestSharp.Authenticators;
 using System;
@@ -13,7 +12,7 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
 {
 
     //TODO implement error logging
-    public class BaseService : RestClient, IBaseService<Object>
+    public class BaseService : RestClient, IBaseService
     {
 
         private string _username = string.Empty;
