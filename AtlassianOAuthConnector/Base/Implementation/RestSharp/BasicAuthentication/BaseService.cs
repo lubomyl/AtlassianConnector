@@ -1,10 +1,14 @@
-﻿using DevDefined.OAuth.Framework;
+﻿using AtlassianConnector.Model;
+using AtlassianConnector.Model.Exceptions;
+using DevDefined.OAuth.Framework;
+using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,6 +21,8 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
         private static JiraService _jiraInstance = null;
         private static ConfluenceService _confluenceInstance = null;
 
+        private const int TIMEOUT = 5000;
+
         private string _baseUrl;
         private string _username;
         private string _password;
@@ -28,6 +34,7 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
         public void InitializeBasicAuthenticationAuthenticator(string baseUrl, string username, string password)
         {
             this._baseUrl = baseUrl;
+
             this._username = username;
             this._password = password;
 
@@ -42,18 +49,48 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
 
         public T Get<T>(string resource, string resourceContext) where T : new()
         {
-            var request = new RestRequest(resource);
+            var request = new RestRequest(resource, Method.GET);
+            this.BaseUrl = new Uri(this._baseUrl + resourceContext);
+            request.Timeout = TIMEOUT;
 
-            var response = Execute<T>(request);
+            try
+            {
+                using (var response = Execute<T>(request) as HttpWebResponse)
+                {
+                    if (response != null)
+                    {
+                        using (var reader = new StreamReader(response.GetResponseStream()))
+                        {
+                            return JsonConvert.DeserializeObject<T>(reader.ReadToEnd());
+                        }
+                    }
+                }
+            }
+            catch (WebException wex)
+            {
+                if (wex.Response != null)
+                {
+                    using (var errorResponse = wex.Response as HttpWebResponse)
+                    {
+                        using (var reader = new StreamReader(errorResponse.GetResponseStream()))
+                        {
+                            ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
 
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                return response.Data;
+                            throw new JiraException(er);
+                        }
+                    }
+                }
+                else
+                {
+                    ErrorResponse er = new ErrorResponse();
+                    er.ErrorMessages = new string[1];
+                    er.ErrorMessages[0] = wex.Message;
+
+                    throw new JiraException(er);
+                }
             }
-            else
-            {
-                return default(T);
-            }
+
+            return default(T);
         }
 
         public void Put(string resource, string resourceContext, byte[] content)

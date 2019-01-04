@@ -31,6 +31,9 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         private static JiraService _jiraInstance = null;
         private static ConfluenceService _confluenceInstance = null;
 
+        private const int TIMEOUT = 5000;
+        private const int EXTENDED_TIMEOUT = 50000;
+
         private string _baseUrl;
 
         private string _requestTokenUrlContext, _userAuthorizeTokenUrlContext, _accessTokenUrlContext;
@@ -96,7 +99,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         {
             try
             {
-                var webRequest = _session.Request().WithTimeout(5000).Get().ForUrl(_baseUrl + resourceContext + resource).ToWebRequest();
+                var webRequest = _session.Request().WithTimeout(TIMEOUT).Get().ForUrl(_baseUrl + resourceContext + resource).ToWebRequest();
 
                 using (var response = webRequest.GetResponse() as HttpWebResponse)
                 {
@@ -143,7 +146,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         {
             try
             {
-                var webRequest = _session.Request().WithTimeout(5000).ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
+                var webRequest = _session.Request().WithTimeout(TIMEOUT).ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
 
                 using (var response = webRequest.GetResponse() as HttpWebResponse);
             }
@@ -183,12 +186,12 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             
             if (contentType.Equals("multipart/form-data")) {
                 request.WithHeaders(new Dictionary<string, string> { { "X-Atlassian-Token", "no-check" } });
-                request.WithTimeout(50000);
+                request.WithTimeout(EXTENDED_TIMEOUT);
                 PostMultiPart(request, file);
             }
             else
             {
-                request.WithTimeout(5000);
+                request.WithTimeout(TIMEOUT);
                 request.WithRawContentType(contentType);
                 request.WithRawContent(content);
 
@@ -232,7 +235,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             var request = _session.Request();
             request.ForMethod("POST");
             request.ForUri(new Uri(_baseUrl + resourceContext + resource));
-            request.WithTimeout(5000);
+            request.WithTimeout(TIMEOUT);
 
             request.WithRawContentType("application/json");
             request.WithRawContent(content);
@@ -283,7 +286,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         {
             try
             {
-                var webRequest = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).WithTimeout(60000).ToWebRequest();
+                var webRequest = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).WithTimeout(TIMEOUT).ToWebRequest();
 
                 using (var response = webRequest.GetResponse() as HttpWebResponse);
             }
