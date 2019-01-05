@@ -34,7 +34,7 @@ namespace AtlassianConnector.Base
         /// <param name="content">Content to send. Default null.</param>
         /// <param name="contentType">ContentType to send. Default application/json. Supporting multipart/form-data.</param>
         /// <returns></returns>
-        void Post(string resource, string resourceContext, FileInfo file, byte[] content, string contentType);
+        void Post(string resource, string resourceContext, FileInfo file, string content, string contentType);
 
         /// <summary>
         /// HTTP POST with response operation.
@@ -43,7 +43,7 @@ namespace AtlassianConnector.Base
         /// <param name="resourceContext">Url context specifying path to resource. (e. g. /api/agile/latest)</param>
         /// <param name="content">Content to send.</param>
         /// <returns></returns>
-        K PostWithResponse<K>(string resource, string resourceContext, byte[] content) where K : new();
+        K PostWithResponse<K>(string resource, string resourceContext, string content) where K : new();
 
         /// <summary>
         /// HTTP PUT operation.
@@ -52,7 +52,7 @@ namespace AtlassianConnector.Base
         /// <param name="resourceContext">Url context specifying path to resource. (e. g. /api/agile/latest)</param>
         /// <param name="content">Content to send.</param>
         /// <returns></returns>
-        void Put(string resource, string resourceContext, byte[] content);
+        void Put(string resource, string resourceContext, string content);
 
         /// <summary>
         /// HTTP DELETE operation.

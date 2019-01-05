@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AtlassianConnector.Base.Implementation.DevDefined
 {
-    public class JiraService : BaseOAuthService
+    public class JiraService : BaseOAuthService, IBaseJiraService
     {
 
         private const string REQUEST_TOKEN_URL_CONTEXT = "/plugins/servlet/oauth/request-token";
@@ -39,22 +39,22 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             return base.Get<K>(resource, RESOURCE_CONTEXT_AGILE);
         }
 
-        public void PutResource(string resource, byte[] content)
+        public void PutResource(string resource, string content)
         {
             base.Put(resource, RESOURCE_CONTEXT, content);
         }
 
-        public void PostResourceContent(string resource, byte[] content)
+        public void PostResourceContent(string resource, string content)
         {
             base.Post(resource, RESOURCE_CONTEXT, null, content);
         }
 
-        public void PostAgileResourceContent(string resource, byte[] content)
+        public void PostAgileResourceContent(string resource, string content)
         {
             base.Post(resource, RESOURCE_CONTEXT_AGILE, null, content);
         }
 
-        public K PostResourceContentWithResponse<K>(string resource, byte[] content) where K : new()
+        public K PostResourceContentWithResponse<K>(string resource, string content) where K : new()
         {
             return base.PostWithResponse<K>(resource, RESOURCE_CONTEXT, content);
         }

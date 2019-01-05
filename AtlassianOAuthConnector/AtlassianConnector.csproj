@@ -59,6 +59,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Base\IBaseJiraService.cs" />
     <Compile Include="Base\IBaseOAuthService.cs" />
     <Compile Include="Base\IBaseService.cs" />
     <Compile Include="Base\Implementation\DevDefined\OAuth\BaseOAuthService.cs" />
@@ -69,6 +70,7 @@
     <Compile Include="Base\Implementation\RestSharp\BasicAuthentication\JiraService.cs" />
     <Compile Include="Model\ErrorResponse.cs" />
     <Compile Include="Model\Exceptions\JiraException.cs" />
+    <Compile Include="Model\Exceptions\UnauthorizedException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

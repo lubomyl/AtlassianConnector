@@ -142,11 +142,11 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// <summary>
         /// <see cref="IBaseOAuthService{T}.Put(string, string, byte)"/>
         /// </summary>
-        public void Put(string resource, string resourceContext, byte[] content)
+        public void Put(string resource, string resourceContext, string content)
         {
             try
             {
-                var webRequest = _session.Request().WithTimeout(TIMEOUT).ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
+                var webRequest = _session.Request().WithTimeout(TIMEOUT).ForMethod("PUT").WithRawContentType("application/json").WithRawContent(Encoding.UTF8.GetBytes(content)).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
 
                 using (var response = webRequest.GetResponse() as HttpWebResponse);
             }
@@ -178,7 +178,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// <summary>
         /// <see cref="IBaseOAuthService{T}.Post(string, string, byte, string)"/>
         /// </summary>
-        public void Post(string resource, string resourceContext, FileInfo file = null, byte[] content = null, string contentType = "application/json")
+        public void Post(string resource, string resourceContext, FileInfo file = null, string content = null, string contentType = "application/json")
         {
             var request = _session.Request();
             request.ForMethod("POST");
@@ -193,7 +193,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             {
                 request.WithTimeout(TIMEOUT);
                 request.WithRawContentType(contentType);
-                request.WithRawContent(content);
+                request.WithRawContent(Encoding.UTF8.GetBytes(content));
 
                 try
                 {
@@ -230,7 +230,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         /// <summary>
         /// <see cref="IBaseOAuthService{T}.PostWithResponse(string, string, byte)"/>
         /// </summary>
-        public K PostWithResponse<K>(string resource, string resourceContext, byte[] content) where K : new()
+        public K PostWithResponse<K>(string resource, string resourceContext, string content) where K : new()
         {
             var request = _session.Request();
             request.ForMethod("POST");
@@ -238,7 +238,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
             request.WithTimeout(TIMEOUT);
 
             request.WithRawContentType("application/json");
-            request.WithRawContent(content);
+            request.WithRawContent(Encoding.UTF8.GetBytes(content));
 
             try
             {

@@ -22,6 +22,7 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
         private static ConfluenceService _confluenceInstance = null;
 
         private const int TIMEOUT = 5000;
+        private const int EXTENDED_TIMEOUT = 50000;
 
         private string _baseUrl;
         private string _username;
@@ -34,11 +35,18 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
         public void InitializeBasicAuthenticationAuthenticator(string baseUrl, string username, string password)
         {
             this._baseUrl = baseUrl;
+            this.BaseUrl = new Uri(baseUrl);
 
             this._username = username;
             this._password = password;
 
             this.Authenticator = new HttpBasicAuthenticator(_username, _password);
+        }
+
+        public void DeleteAuthenticationCredentials()
+        {
+            this._username = null;
+            this._password = null;
         }
 
         /*
@@ -49,68 +57,130 @@ namespace AtlassianConnector.Base.Implementation.RestSharp
 
         public T Get<T>(string resource, string resourceContext) where T : new()
         {
-            var request = new RestRequest(resource, Method.GET);
-            this.BaseUrl = new Uri(this._baseUrl + resourceContext);
+            var request = new RestRequest(new Uri(this._baseUrl + resourceContext + resource), Method.GET);
             request.Timeout = TIMEOUT;
 
-            try
-            {
-                using (var response = Execute<T>(request) as HttpWebResponse)
-                {
-                    if (response != null)
-                    {
-                        using (var reader = new StreamReader(response.GetResponseStream()))
-                        {
-                            return JsonConvert.DeserializeObject<T>(reader.ReadToEnd());
-                        }
-                    }
-                }
-            }
-            catch (WebException wex)
-            {
-                if (wex.Response != null)
-                {
-                    using (var errorResponse = wex.Response as HttpWebResponse)
-                    {
-                        using (var reader = new StreamReader(errorResponse.GetResponseStream()))
-                        {
-                            ErrorResponse er = JsonConvert.DeserializeObject<ErrorResponse>(reader.ReadToEnd());
+            var response = Execute<T>(request);
 
-                            throw new JiraException(er);
-                        }
-                    }
-                }
-                else
+            if (response.ErrorException != null)
+            {
+                if(response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    ErrorResponse er = new ErrorResponse();
-                    er.ErrorMessages = new string[1];
-                    er.ErrorMessages[0] = wex.Message;
-
-                    throw new JiraException(er);
+                    throw new UnauthorizedException("Access is denied due to invalid credentials.");
                 }
+
+                ErrorResponse er = new ErrorResponse();
+                er.ErrorMessages = new string[1];
+                er.ErrorMessages[0] = response.ErrorException.Message;
+
+                throw new JiraException(er);
             }
 
-            return default(T);
+            return response.Data;
         }
 
-        public void Put(string resource, string resourceContext, byte[] content)
+        public void Put(string resource, string resourceContext, string content)
         {
-            throw new NotImplementedException();
+            var request = new RestRequest(new Uri(this._baseUrl + resourceContext + resource), Method.PUT);
+            request.Timeout = TIMEOUT;
+            request.AddParameter("application/json", content, ParameterType.RequestBody);
+
+            var response = Execute(request);
+
+            if (response.ErrorException != null)
+            {
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new UnauthorizedException("Access is denied due to invalid credentials.");
+                }
+
+                ErrorResponse er = new ErrorResponse();
+                er.ErrorMessages = new string[1];
+                er.ErrorMessages[0] = response.ErrorException.Message;
+
+                throw new JiraException(er);
+            }
         }
 
-        public void Post(string resource, string resourceContext, FileInfo file, byte[] content, string contentType)
+        public void Post(string resource, string resourceContext, FileInfo file, string content, string contentType = "application/json")
         {
-            throw new NotImplementedException();
+            var request = new RestRequest(new Uri(this._baseUrl + resourceContext + resource), Method.POST);
+
+            if (contentType.Equals("multipart/form-data"))
+            {
+                request.AddHeader("X-Atlassian-Token", "no-check");
+                request.Timeout = EXTENDED_TIMEOUT;
+                request.AlwaysMultipartFormData = true;
+                request.AddFile("file", file.FullName, "multipart/form-data");
+            }
+            else
+            {
+                request.Timeout = TIMEOUT;
+                request.AddParameter("application/json", content, ParameterType.RequestBody);
+            }
+
+            var response = Execute(request);
+
+            if (response.ErrorException != null)
+            {
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new UnauthorizedException("Access is denied due to invalid credentials.");
+                }
+
+                ErrorResponse er = new ErrorResponse();
+                er.ErrorMessages = new string[1];
+                er.ErrorMessages[0] = response.ErrorException.Message;
+
+                throw new JiraException(er);
+            }
         }
 
         public void Delete(string resource, string resourceContext)
         {
-            throw new NotImplementedException();
+            var request = new RestRequest(new Uri(this._baseUrl + resourceContext + resource), Method.DELETE);
+            request.Timeout = TIMEOUT;
+
+            var response = Execute(request);
+
+            if (response.ErrorException != null)
+            {
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new UnauthorizedException("Access is denied due to invalid credentials.");
+                }
+
+                ErrorResponse er = new ErrorResponse();
+                er.ErrorMessages = new string[1];
+                er.ErrorMessages[0] = response.ErrorException.Message;
+
+                throw new JiraException(er);
+            }
         }
 
-        public K PostWithResponse<K>(string resource, string resourceContext, byte[] content) where K : new()
+        public K PostWithResponse<K>(string resource, string resourceContext, string content) where K : new()
         {
-            throw new NotImplementedException();
+            var request = new RestRequest(new Uri(this._baseUrl + resourceContext + resource), Method.POST);
+            request.Timeout = TIMEOUT;
+            request.AddParameter("application/json", content, ParameterType.RequestBody);
+
+            var response = Execute<K>(request);
+
+            if (response.ErrorException != null)
+            {
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new UnauthorizedException("Access is denied due to invalid credentials.");
+                }
+
+                ErrorResponse er = new ErrorResponse();
+                er.ErrorMessages = new string[1];
+                er.ErrorMessages[0] = response.ErrorException.Message;
+
+                throw new JiraException(er);
+            }
+
+            return response.Data;
         }
 
         public static ConfluenceService ConfluenceInstance
