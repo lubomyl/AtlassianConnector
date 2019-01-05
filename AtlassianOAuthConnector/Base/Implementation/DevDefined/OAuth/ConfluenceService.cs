@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AtlassianConnector.Base.Implementation.DevDefined
 {
-    public class ConfluenceService : BaseService
+    public class ConfluenceService : BaseOAuthService
     {
 
         private const string REQUEST_TOKEN_URL_CONTEXT = "/wiki/plugins/servlet/oauth/request-token";
@@ -17,8 +17,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         public ConfluenceService() : base() {
             base.InitializeUris(REQUEST_TOKEN_URL_CONTEXT,
                 USER_AUTHORIZE_TOKEN_URL_CONTEXT,
-                ACCESS_TOKEN_URL_CONTEXT,
-                RESOURCE_CONTEXT);
+                ACCESS_TOKEN_URL_CONTEXT);
         }
 
         public K GetResource<K>(string resource) where K : new()

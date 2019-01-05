@@ -1,7 +1,6 @@
 ﻿using AtlassianConnector.Model;
 using AtlassianConnector.Model.Exceptions;
 using AtlassianConnector.Properties;
-using AtlassianConnector.Service;
 using DevDefined.OAuth.Consumer;
 using DevDefined.OAuth.Framework;
 using Newtonsoft.Json;
@@ -25,22 +24,25 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
     /// DevDefined.OAuth library concrete implementation of IBaseService.
     /// Singleton class pattern used to not to reinitialize OAuth session on every reference of this class.
     /// </summary>
-    public class BaseService : IBaseService<IToken>
+    public class BaseOAuthService : IBaseOAuthService<IToken>
     {
         private static OAuthSession _session;
 
         private static JiraService _jiraInstance = null;
         private static ConfluenceService _confluenceInstance = null;
 
+        private const int TIMEOUT = 5000;
+        private const int EXTENDED_TIMEOUT = 50000;
+
         private string _baseUrl;
 
         private string _requestTokenUrlContext, _userAuthorizeTokenUrlContext, _accessTokenUrlContext;
 
-        protected BaseService()
+        protected BaseOAuthService()
         {
         }
 
-        protected void InitializeUris(string requestTokenUrl, string userAuthorizeTokenUrlContext, string accessTokenUrlContext, string resourceContext)
+        protected void InitializeUris(string requestTokenUrl, string userAuthorizeTokenUrlContext, string accessTokenUrlContext)
         {
             this._requestTokenUrlContext = requestTokenUrl;
             this._userAuthorizeTokenUrlContext = userAuthorizeTokenUrlContext;
@@ -91,13 +93,13 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
 
 
         /// <summary>
-        /// <see cref="IBaseService{T}.Get{K}(string, string)"/>
+        /// <see cref="IBaseOAuthService{T}.Get{K}(string, string)"/>
         /// </summary>
         public K Get<K>(string resource, string resourceContext) where K : new()
         {
             try
             {
-                var webRequest = _session.Request().WithTimeout(5000).Get().ForUrl(_baseUrl + resourceContext + resource).ToWebRequest();
+                var webRequest = _session.Request().WithTimeout(TIMEOUT).Get().ForUrl(_baseUrl + resourceContext + resource).ToWebRequest();
 
                 using (var response = webRequest.GetResponse() as HttpWebResponse)
                 {
@@ -138,13 +140,13 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.Put(string, string, byte)"/>
+        /// <see cref="IBaseOAuthService{T}.Put(string, string, byte)"/>
         /// </summary>
-        public void Put(string resource, string resourceContext, byte[] content)
+        public void Put(string resource, string resourceContext, string content)
         {
             try
             {
-                var webRequest = _session.Request().WithTimeout(5000).ForMethod("PUT").WithRawContentType("application/json").WithRawContent(content).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
+                var webRequest = _session.Request().WithTimeout(TIMEOUT).ForMethod("PUT").WithRawContentType("application/json").WithRawContent(Encoding.UTF8.GetBytes(content)).ForUri(new Uri(_baseUrl + resourceContext + resource)).ToWebRequest();
 
                 using (var response = webRequest.GetResponse() as HttpWebResponse);
             }
@@ -174,24 +176,24 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.Post(string, string, byte, string)"/>
+        /// <see cref="IBaseOAuthService{T}.Post(string, string, byte, string)"/>
         /// </summary>
-        public void Post(string resource, string resourceContext, FileInfo file = null, byte[] content = null, string contentType = "application/json")
+        public void Post(string resource, string resourceContext, FileInfo file = null, string content = null, string contentType = "application/json")
         {
             var request = _session.Request();
             request.ForMethod("POST");
             request.ForUri(new Uri(_baseUrl + resourceContext + resource));
-            request.WithTimeout(5000);
-
+            
             if (contentType.Equals("multipart/form-data")) {
                 request.WithHeaders(new Dictionary<string, string> { { "X-Atlassian-Token", "no-check" } });
-                request.WithTimeout(20000);
+                request.WithTimeout(EXTENDED_TIMEOUT);
                 PostMultiPart(request, file);
             }
             else
             {
+                request.WithTimeout(TIMEOUT);
                 request.WithRawContentType(contentType);
-                request.WithRawContent(content);
+                request.WithRawContent(Encoding.UTF8.GetBytes(content));
 
                 try
                 {
@@ -226,17 +228,17 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.PostWithResponse(string, string, byte)"/>
+        /// <see cref="IBaseOAuthService{T}.PostWithResponse(string, string, byte)"/>
         /// </summary>
-        public K PostWithResponse<K>(string resource, string resourceContext, byte[] content) where K : new()
+        public K PostWithResponse<K>(string resource, string resourceContext, string content) where K : new()
         {
             var request = _session.Request();
             request.ForMethod("POST");
             request.ForUri(new Uri(_baseUrl + resourceContext + resource));
-            request.WithTimeout(5000);
+            request.WithTimeout(TIMEOUT);
 
             request.WithRawContentType("application/json");
-            request.WithRawContent(content);
+            request.WithRawContent(Encoding.UTF8.GetBytes(content));
 
             try
             {
@@ -284,7 +286,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         {
             try
             {
-                var webRequest = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).WithTimeout(60000).ToWebRequest();
+                var webRequest = _session.Request().ForMethod("DELETE").ForUri(new Uri(_baseUrl + resourceContext + resource)).WithTimeout(TIMEOUT).ToWebRequest();
 
                 using (var response = webRequest.GetResponse() as HttpWebResponse);
             }
@@ -314,7 +316,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.GetRequestToken"/>
+        /// <see cref="IBaseOAuthService{T}.GetRequestToken"/>
         /// </summary>
         public IToken GetRequestToken()
         {
@@ -324,7 +326,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.GetUserAuthorizationUrlForToken(T)"/>
+        /// <see cref="IBaseOAuthService{T}.GetUserAuthorizationUrlForToken(T)"/>
         /// </summary>
         public string GetUserAuthorizationUrlForToken(IToken requestToken)
         {
@@ -334,7 +336,7 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
         }
 
         /// <summary>
-        /// <see cref="IBaseService{T}.ExchangeRequestTokenForAccessToken(T, string)"/>
+        /// <see cref="IBaseOAuthService{T}.ExchangeRequestTokenForAccessToken(T, string)"/>
         /// </summary>
         public IToken ExchangeRequestTokenForAccessToken(IToken requestToken, string verificationCode)
         {
@@ -380,7 +382,11 @@ namespace AtlassianConnector.Base.Implementation.DevDefined
                 using (Stream requestStream = request.GetRequestStream())
                 {
                     content.WriteTo(requestStream);
+                    content.Close();
+                    writer.Close();
                 }
+
+                using (var response = request.GetResponse()) ;
             }
             catch (WebException wex)
             {
